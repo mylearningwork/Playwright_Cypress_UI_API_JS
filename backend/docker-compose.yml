@@ -1,0 +1,11 @@
+services:
+  api:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      JWT_SECRET: replace-this-with-a-long-random-secret
+      CORS_ORIGIN: "*"
+      JSONPLACEHOLDER_BASE_URL: https://jsonplaceholder.typicode.com
