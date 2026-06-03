@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, requireRole } from '../../middleware/authenticate.js';
+import { tenantContext } from '../../middleware/tenant.js';
 import { asyncHandler } from '../../shared/async-handler.js';
 import { validate } from '../../shared/validate.js';
 import * as productService from './product.service.js';
 
 export const productRouter = Router();
 
-productRouter.use(authenticate);
+productRouter.use(authenticate, tenantContext);
 
 productRouter.get(
   '/',
@@ -15,15 +16,23 @@ productRouter.get(
     query: z.object({
       status: z.enum(['active', 'inactive']).optional(),
       q: z.string().optional(),
-      lowStock: z.coerce.boolean().optional()
+      lowStock: z.coerce.boolean().optional(),
+      limit: z.coerce.number().int().positive().max(100).default(20),
+      cursor: z.string().optional()
     })
   }),
-  (req, res) => res.json(productService.listProducts(req.validated.query))
+  asyncHandler(async (req, res) => {
+    res.json(await productService.listProducts(req.tenantId, req.validated.query));
+  })
 );
 
-productRouter.get('/:id', validate({ params: z.object({ id: z.string().uuid() }) }), (req, res) => {
-  res.json({ data: productService.getProduct(req.validated.params.id) });
-});
+productRouter.get(
+  '/:id',
+  validate({ params: z.object({ id: z.string().uuid() }) }),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await productService.getProduct(req.tenantId, req.validated.params.id) });
+  })
+);
 
 productRouter.post(
   '/',
@@ -37,6 +46,6 @@ productRouter.post(
     })
   }),
   asyncHandler(async (req, res) => {
-    res.status(201).json({ data: productService.createProduct(req.validated.body, req.user) });
+    res.status(201).json({ data: await productService.createProduct(req.tenantId, req.validated.body, req.user) });
   })
 );

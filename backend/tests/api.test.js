@@ -1,8 +1,15 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
+import { setRepository } from '../src/repositories/index.js';
+import { memoryRepository, resetMemoryState } from '../src/repositories/memory-repository.js';
 
 const app = createApp();
+
+beforeEach(() => {
+  resetMemoryState();
+  setRepository(memoryRepository);
+});
 
 async function loginAsAdmin() {
   const response = await request(app)
@@ -19,14 +26,34 @@ describe('backend training API', () => {
     expect(response.body.status).toBe('ok');
   });
 
-  it('authenticates seeded users', async () => {
+  it('reports liveness and readiness', async () => {
+    await request(app).get('/health/live').expect(200);
+    const ready = await request(app).get('/health/ready');
+    expect([200, 503]).toContain(ready.status);
+  });
+
+  it('exposes metrics and openapi docs', async () => {
+    const metrics = await request(app).get('/metrics').expect(200);
+    expect(metrics.text).toContain('http_requests_total');
+    await request(app).get('/openapi.json').expect(200);
+  });
+
+  it('authenticates seeded users and refreshes tokens', async () => {
     const response = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: 'manager@example.com', password: 'Manager@12345' })
       .expect(200);
 
     expect(response.body.token).toEqual(expect.any(String));
+    expect(response.body.refreshToken).toEqual(expect.any(String));
     expect(response.body.user.role).toBe('manager');
+
+    const refreshed = await request(app)
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken: response.body.refreshToken })
+      .expect(200);
+
+    expect(refreshed.body.accessToken).toEqual(expect.any(String));
   });
 
   it('protects customer APIs', async () => {
@@ -79,5 +106,11 @@ describe('backend training API', () => {
 
     expect(replay.headers['x-idempotent-replay']).toBe('true');
     expect(replay.body.data.id).toBe(first.body.data.id);
+  });
+
+  it('returns RFC7807 problem responses', async () => {
+    const response = await request(app).get('/api/v1/customers');
+    expect(response.headers['content-type']).toContain('application/problem+json');
+    expect(response.body.code).toBe('UNAUTHORIZED');
   });
 });

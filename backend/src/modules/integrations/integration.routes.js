@@ -25,6 +25,9 @@ integrationRouter.get(
   })
 );
 
-integrationRouter.get('/cache-stats', (_req, res) => {
-  res.json(jsonPlaceholder.cacheStats());
-});
+integrationRouter.get(
+  '/cache-stats',
+  asyncHandler(async (_req, res) => {
+    res.json(await jsonPlaceholder.cacheStats());
+  })
+);

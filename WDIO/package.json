@@ -1,0 +1,32 @@
+{
+  "name": "wdio-ui-automation-js",
+  "version": "1.0.0",
+  "description": "WebdriverIO UI automation framework using JavaScript.",
+  "type": "module",
+  "main": "wdio.conf.js",
+  "scripts": {
+    "test": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js",
+    "test:headed": "WEBDRIVER_CACHE_DIR=.wdio-cache HEADLESS=false wdio run wdio.conf.js",
+    "test:smoke": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --grep @smoke",
+    "test:login": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --spec test/specs/login.spec.js",
+    "clean": "rimraf reports/allure-results reports/spec screenshots logs"
+  },
+  "keywords": [
+    "webdriverio",
+    "wdio",
+    "ui-automation",
+    "javascript",
+    "mocha"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@wdio/allure-reporter": "^9.19.1",
+    "@wdio/cli": "^9.19.1",
+    "@wdio/globals": "^9.19.1",
+    "@wdio/local-runner": "^9.19.1",
+    "@wdio/mocha-framework": "^9.19.1",
+    "@wdio/spec-reporter": "^9.19.1",
+    "rimraf": "^6.0.1"
+  }
+}

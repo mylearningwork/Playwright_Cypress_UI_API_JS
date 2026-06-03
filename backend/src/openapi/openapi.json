@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Backend Heavy JS Training API",
+    "version": "1.0.0",
+    "description": "Production-style REST API with auth, multi-tenancy, idempotency, observability, and async outbox processing."
+  },
+  "servers": [{ "url": "http://localhost:4000" }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    }
+  },
+  "paths": {
+    "/health": { "get": { "summary": "Health check" } },
+    "/health/live": { "get": { "summary": "Liveness probe" } },
+    "/health/ready": { "get": { "summary": "Readiness probe" } },
+    "/metrics": { "get": { "summary": "Prometheus metrics" } },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": { "post": { "summary": "Refresh access token" } },
+    "/api/v1/auth/logout": { "post": { "summary": "Logout and revoke refresh token" } },
+    "/api/v1/auth/forgot-password": { "post": { "summary": "Request password reset token" } },
+    "/api/v1/auth/reset-password": { "post": { "summary": "Reset password using token" } },
+    "/api/v1/auth/me": { "get": { "summary": "Current user", "security": [{ "bearerAuth": [] }] } },
+    "/api/v1/customers": {
+      "get": { "summary": "List customers (cursor pagination)", "security": [{ "bearerAuth": [] }] },
+      "post": { "summary": "Create customer", "security": [{ "bearerAuth": [] }] }
+    },
+    "/api/v1/products": {
+      "get": { "summary": "List products", "security": [{ "bearerAuth": [] }] },
+      "post": { "summary": "Create product", "security": [{ "bearerAuth": [] }] }
+    },
+    "/api/v1/orders": {
+      "get": { "summary": "List orders", "security": [{ "bearerAuth": [] }] },
+      "post": {
+        "summary": "Create order (supports Idempotency-Key header)",
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/api/v1/orders/{id}/cancel": { "post": { "summary": "Cancel order", "security": [{ "bearerAuth": [] }] } },
+    "/api/v1/integrations/jsonplaceholder/users/{userId}": {
+      "get": { "summary": "Fetch external user", "security": [{ "bearerAuth": [] }] }
+    },
+    "/api/v1/admin/metrics": { "get": { "summary": "Admin metrics", "security": [{ "bearerAuth": [] }] } },
+    "/api/v1/admin/audit-logs": { "get": { "summary": "Audit logs", "security": [{ "bearerAuth": [] }] } }
+  }
+}

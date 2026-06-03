@@ -1,17 +1,34 @@
+import { env } from '../config/env.js';
 import { AppError } from '../shared/errors.js';
 
-export function errorHandler(error, req, res, _next) {
-  const isTrusted = error instanceof AppError;
-  const statusCode = isTrusted ? error.statusCode : 500;
+const problemTypes = {
+  BAD_REQUEST: 'bad-request',
+  UNAUTHORIZED: 'unauthorized',
+  FORBIDDEN: 'forbidden',
+  NOT_FOUND: 'not-found',
+  CONFLICT: 'conflict',
+  UPSTREAM_UNAVAILABLE: 'upstream-unavailable',
+  INTERNAL_ERROR: 'internal-error'
+};
 
-  req.log?.error({ err: error, requestId: req.id }, 'request failed');
+export function errorHandler(err, req, res, _next) {
+  const isTrusted = err instanceof AppError;
+  const statusCode = isTrusted ? err.statusCode : 500;
+  const code = isTrusted ? err.code : 'INTERNAL_ERROR';
 
-  res.status(statusCode).json({
-    error: {
-      code: isTrusted ? error.code : 'INTERNAL_ERROR',
-      message: isTrusted ? error.message : 'Unexpected server error',
-      requestId: req.id,
-      details: isTrusted ? error.details : undefined
-    }
-  });
+  if (!isTrusted) req.log?.error({ err }, 'Unhandled error');
+
+  const problem = {
+    type: `${env.API_BASE_URL}/problems/${problemTypes[code] ?? 'internal-error'}`,
+    title: err.message || 'Internal Server Error',
+    status: statusCode,
+    detail: err.message || 'Internal Server Error',
+    instance: req.originalUrl,
+    code,
+    requestId: req.id
+  };
+
+  if (isTrusted && err.details) problem.errors = err.details;
+
+  res.status(statusCode).type('application/problem+json').json(problem);
 }

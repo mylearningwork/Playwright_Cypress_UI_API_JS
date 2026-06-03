@@ -21,5 +21,13 @@ export default [
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-console': 'off'
     }
+  },
+  {
+    files: ['load-tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        __ENV: 'readonly'
+      }
+    }
   }
 ];

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, requireRole } from '../../middleware/authenticate.js';
+import { tenantContext } from '../../middleware/tenant.js';
 import { asyncHandler } from '../../shared/async-handler.js';
 import { validate } from '../../shared/validate.js';
 import * as customerService from './customer.service.js';
@@ -14,7 +15,7 @@ const customerInput = z.object({
   tier: z.enum(['bronze', 'silver', 'gold', 'platinum']).default('bronze')
 });
 
-customerRouter.use(authenticate);
+customerRouter.use(authenticate, tenantContext);
 
 customerRouter.get(
   '/',
@@ -23,22 +24,28 @@ customerRouter.get(
       status: z.enum(['active', 'inactive']).optional(),
       tier: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional(),
       limit: z.coerce.number().int().positive().max(100).default(20),
-      offset: z.coerce.number().int().min(0).default(0)
+      cursor: z.string().optional()
     })
   }),
-  (req, res) => res.json(customerService.listCustomers(req.validated.query))
+  asyncHandler(async (req, res) => {
+    res.json(await customerService.listCustomers(req.tenantId, req.validated.query));
+  })
 );
 
-customerRouter.get('/:id', validate({ params: idParam }), (req, res) => {
-  res.json({ data: customerService.getCustomer(req.validated.params.id) });
-});
+customerRouter.get(
+  '/:id',
+  validate({ params: idParam }),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await customerService.getCustomer(req.tenantId, req.validated.params.id) });
+  })
+);
 
 customerRouter.post(
   '/',
   requireRole('admin', 'manager'),
   validate({ body: customerInput }),
   asyncHandler(async (req, res) => {
-    res.status(201).json({ data: customerService.createCustomer(req.validated.body, req.user) });
+    res.status(201).json({ data: await customerService.createCustomer(req.tenantId, req.validated.body, req.user) });
   })
 );
 
@@ -46,11 +53,18 @@ customerRouter.patch(
   '/:id',
   requireRole('admin', 'manager'),
   validate({ params: idParam, body: customerInput.partial() }),
-  (req, res) => {
-    res.json({ data: customerService.updateCustomer(req.validated.params.id, req.validated.body, req.user) });
-  }
+  asyncHandler(async (req, res) => {
+    res.json({
+      data: await customerService.updateCustomer(req.tenantId, req.validated.params.id, req.validated.body, req.user)
+    });
+  })
 );
 
-customerRouter.delete('/:id', requireRole('admin'), validate({ params: idParam }), (req, res) => {
-  res.json({ data: customerService.deactivateCustomer(req.validated.params.id, req.user) });
-});
+customerRouter.delete(
+  '/:id',
+  requireRole('admin'),
+  validate({ params: idParam }),
+  asyncHandler(async (req, res) => {
+    res.json({ data: await customerService.deactivateCustomer(req.tenantId, req.validated.params.id, req.user) });
+  })
+);

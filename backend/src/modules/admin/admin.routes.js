@@ -1,22 +1,33 @@
 import { Router } from 'express';
-import { store } from '../../db/in-memory-store.js';
 import { authenticate, requireRole } from '../../middleware/authenticate.js';
+import { tenantContext } from '../../middleware/tenant.js';
+import { asyncHandler } from '../../shared/async-handler.js';
+import { getRepository } from '../../repositories/index.js';
+import { getQueueStats } from '../../infra/queue.js';
 
 export const adminRouter = Router();
 
-adminRouter.use(authenticate, requireRole('admin'));
+adminRouter.use(authenticate, requireRole('admin'), tenantContext);
 
-adminRouter.get('/metrics', (_req, res) => {
-  res.json({
-    users: store.users.size,
-    customers: store.customers.size,
-    products: store.products.size,
-    orders: store.orders.size,
-    auditLogs: store.auditLogs.length,
-    uptimeSeconds: Math.round(process.uptime())
-  });
-});
+adminRouter.get(
+  '/metrics',
+  asyncHandler(async (req, res) => {
+    const repo = await getRepository();
+    const counts = await repo.getMetrics(req.tenantId);
+    const queue = await getQueueStats();
+    res.json({
+      ...counts,
+      queue,
+      uptimeSeconds: Math.round(process.uptime()),
+      repository: repo.mode
+    });
+  })
+);
 
-adminRouter.get('/audit-logs', (_req, res) => {
-  res.json({ data: store.auditLogs.slice(-100).reverse(), meta: { total: store.auditLogs.length } });
-});
+adminRouter.get(
+  '/audit-logs',
+  asyncHandler(async (req, res) => {
+    const repo = await getRepository();
+    res.json(await repo.listAuditLogs(req.tenantId, 100));
+  })
+);

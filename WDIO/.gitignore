@@ -1,0 +1,7 @@
+node_modules/
+.wdio-cache/
+reports/allure-results/*
+reports/spec/*
+screenshots/*
+logs/*
+!.gitkeep

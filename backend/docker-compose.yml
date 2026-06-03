@@ -1,11 +1,29 @@
-services:
-  api:
+  relay:
     build: .
-    ports:
-      - "4000:4000"
+    command: ["node", "src/relay.js"]
     environment:
       NODE_ENV: production
-      PORT: 4000
-      JWT_SECRET: replace-this-with-a-long-random-secret
-      CORS_ORIGIN: "*"
-      JSONPLACEHOLDER_BASE_URL: https://jsonplaceholder.typicode.com
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/backend_training
+      REDIS_URL: redis://redis:6379
+      USE_IN_MEMORY: "false"
+      RELAY_POLL_INTERVAL_MS: 2000
+      OUTBOX_QUEUE_NAME: domain-events
+    depends_on:
+      api:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: .
+    command: ["node", "src/worker.js"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/backend_training
+      REDIS_URL: redis://redis:6379
+      USE_IN_MEMORY: "false"
+      OUTBOX_QUEUE_NAME: domain-events
+      QUEUE_CONCURRENCY: 5
+    depends_on:
+      relay:
+        condition: service_started

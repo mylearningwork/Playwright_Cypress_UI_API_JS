@@ -7,7 +7,9 @@ export function authenticate(req, _res, next) {
   if (!header?.startsWith('Bearer ')) return next(unauthorized());
 
   try {
-    req.user = jwt.verify(header.slice('Bearer '.length), env.JWT_SECRET);
+    const payload = jwt.verify(header.slice('Bearer '.length), env.JWT_SECRET);
+    if (payload.type && payload.type !== 'access') return next(unauthorized('Access token required'));
+    req.user = payload;
     next();
   } catch {
     next(unauthorized('Invalid or expired token'));
