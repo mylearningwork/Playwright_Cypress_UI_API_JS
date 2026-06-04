@@ -17,3 +17,14 @@ describe('Client App Cart', () => {
     await expect(await CartPage.hasProduct(products.zaraCoat)).toBe(true);
   });
 });
+
+describe("opengoogle chrome",()=>{
+
+  it("it opens search page",()=>{
+
+    browser.url("https://google.com")
+
+  })
+
+
+})
