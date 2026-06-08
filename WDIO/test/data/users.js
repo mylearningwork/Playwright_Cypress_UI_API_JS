@@ -1,10 +1,12 @@
+import 'dotenv/config';
+
 export default {
   validUser: {
-    email: 'testtmail95@gmail.com',
-    password: 'HiRahul@123'
+    email: process.env.USER_EMAIL || '',
+    password: process.env.USER_PASSWORD || ''
   },
   invalidUser: {
-    email: 'invalid-user@example.com',
-    password: 'WrongPassword123'
+    email: process.env.INVALID_USER_EMAIL || 'invalid-user@example.com',
+    password: process.env.INVALID_USER_PASSWORD || 'WrongPassword123'
   }
 };

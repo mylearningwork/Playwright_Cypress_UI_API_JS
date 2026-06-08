@@ -1,6 +1,27 @@
 # Playwright_JS
 Automation Testing | Web+API | Playwright | Javascript | VS Code | Parallel Cross Browser Testing | API Interceptor | Videos | Screenshots | Trace | Retries | Tagging | Viewport | Reports - Playwright, Allure | SSL | Execution - Parallel, Serial, Default | Parameterization using multiple Data sets
 
+## WebdriverIO Framework
+
+This repo also includes a production-style **WebdriverIO v9** framework under [`WDIO/`](WDIO/README.md):
+
+- Page Object Model with custom commands (`browser.login`, `browser.loginViaApi`)
+- UI, API, and mobile (Appium) test layers
+- Allure reporting with failure screenshots
+- GitHub Actions smoke pipeline (`.github/workflows/wdio-ci.yml`)
+
+Quick start:
+
+```bash
+cd WDIO
+npm install
+cp .env.example .env   # add credentials
+npm run test:smoke
+npm run allure:generate && npm run allure:open
+```
+
+See [WDIO/README.md](WDIO/README.md) for full documentation.
+
 
 ![image](https://user-images.githubusercontent.com/26399692/165678491-e42489bc-3f7e-49d7-9962-b6843555bc75.png)
 ![image](https://user-images.githubusercontent.com/26399692/165678566-eeb7bcbf-b956-4a24-a26c-ddae89a751c2.png)

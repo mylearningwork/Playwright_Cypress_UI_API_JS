@@ -9,11 +9,21 @@
     "test:headed": "WEBDRIVER_CACHE_DIR=.wdio-cache HEADLESS=false wdio run wdio.conf.js",
     "test:smoke": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --grep @smoke",
     "test:login": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --spec test/specs/login.spec.js",
-    "clean": "rimraf reports/allure-results reports/spec screenshots logs"
+    "test:checkout": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --spec test/specs/checkout.spec.js",
+    "test:practice-form": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --spec test/specs/practice-form.spec.js",
+    "test:api": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --spec test/specs/api/*.spec.js",
+    "test:api-login": "WEBDRIVER_CACHE_DIR=.wdio-cache wdio run wdio.conf.js --spec test/specs/api-login.spec.js",
+    "test:mobile:android": "MOBILE_PLATFORM=android wdio run wdio.mobile.conf.js",
+    "test:mobile:ios": "MOBILE_PLATFORM=ios wdio run wdio.mobile.conf.js",
+    "allure:generate": "allure generate reports/allure-results --clean -o reports/allure-report",
+    "allure:open": "allure open reports/allure-report",
+    "clean": "rimraf reports/allure-results reports/allure-report reports/spec screenshots logs"
   },
   "keywords": [
     "webdriverio",
     "wdio",
+    "api-testing",
+    "mobile-automation",
     "ui-automation",
     "javascript",
     "mocha"
@@ -22,11 +32,15 @@
   "license": "ISC",
   "devDependencies": {
     "@wdio/allure-reporter": "^9.19.1",
+    "@wdio/appium-service": "^9.19.1",
     "@wdio/cli": "^9.19.1",
     "@wdio/globals": "^9.19.1",
     "@wdio/local-runner": "^9.19.1",
     "@wdio/mocha-framework": "^9.19.1",
     "@wdio/spec-reporter": "^9.19.1",
+    "allure-commandline": "^2.34.0",
+    "appium": "^2.19.0",
+    "dotenv": "^17.2.0",
     "rimraf": "^6.0.1"
   }
 }

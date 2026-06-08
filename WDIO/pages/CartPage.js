@@ -5,6 +5,15 @@ class CartPage extends BasePage {
     return $$('.cartSection h3');
   }
 
+  get checkoutButton() {
+    return $('=Checkout');
+  }
+
+  async goToCheckout() {
+    await this.checkoutButton.waitForClickable();
+    await this.checkoutButton.click();
+  }
+
   async hasProduct(productName) {
     await browser.waitUntil(async () => (await this.cartItems).length > 0, {
       timeout: 15000,

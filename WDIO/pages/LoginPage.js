@@ -14,7 +14,15 @@ class LoginPage extends BasePage {
   }
 
   get incorrectLoginMessage() {
-    return $('[style*="block"]');
+    return $('div[aria-label="Incorrect email or password."]');
+  }
+
+  async getIncorrectLoginMessageText() {
+    await this.incorrectLoginMessage.waitForDisplayed({
+      timeout: 10000,
+      timeoutMsg: 'Expected incorrect login message to be displayed'
+    });
+    return this.incorrectLoginMessage.getText();
   }
 
   async open() {

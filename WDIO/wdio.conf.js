@@ -1,5 +1,10 @@
+import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { registerCustomCommands } from './utils/customCommands.js';
+import { onPrepare } from './utils/hooks/onPrepare.js';
+import { beforeTest } from './utils/hooks/beforeTest.js';
+import { afterTest } from './utils/hooks/afterTest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,8 +17,9 @@ const baseUrl = process.env.BASE_URL || 'https://www.rahulshettyacademy.com/clie
 export const config = {
   runner: 'local',
   specs: ['./test/specs/**/*.spec.js'],
-  exclude: [],
-  maxInstances: Number(process.env.MAX_INSTANCES || 2),
+  exclude: ['./test/specs/mobile/**'],
+  maxInstances: Number(process.env.MAX_INSTANCES || 1),
+  specFileRetries: Number(process.env.SPEC_FILE_RETRIES || 2),
   logLevel: process.env.WDIO_LOG_LEVEL || 'error',
   bail: 0,
   baseUrl,
@@ -49,13 +55,11 @@ export const config = {
       ]
     }
   }],
+  onPrepare,
   before: async function () {
+    registerCustomCommands();
     await browser.setWindowSize(1440, 900);
   },
-  afterTest: async function (test, context, { passed }) {
-    if (!passed) {
-      const safeTitle = test.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase();
-      await browser.saveScreenshot(path.join(__dirname, 'screenshots', `${safeTitle}.png`));
-    }
-  }
+  beforeTest,
+  afterTest
 };

@@ -1,0 +1,52 @@
+name: WDIO CI
+
+on:
+  push:
+    paths:
+      - 'WDIO/**'
+      - '.github/workflows/wdio-ci.yml'
+  pull_request:
+    paths:
+      - 'WDIO/**'
+      - '.github/workflows/wdio-ci.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WDIO
+
+    env:
+      BASE_URL: https://www.rahulshettyacademy.com/client
+      AUTH_API_URL: https://www.rahulshettyacademy.com/api/ecom/auth/login
+      USER_EMAIL: testtmail95@gmail.com
+      USER_PASSWORD: HiRahul@123
+      HEADLESS: true
+      MAX_INSTANCES: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: WDIO/package-lock.json
+
+      - run: npm ci
+      - run: npm run test:smoke
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wdio-allure-results
+          path: WDIO/reports/allure-results
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wdio-screenshots
+          path: WDIO/screenshots

@@ -36,7 +36,12 @@ class DashboardPage extends BasePage {
   }
 
   async openCart() {
+    await this.cartLink.waitForClickable();
     await this.cartLink.click();
+    await browser.waitUntil(async () => (await $$('.cartSection h3')).length > 0, {
+      timeout: 15000,
+      timeoutMsg: 'Expected cart items to load after opening cart'
+    });
   }
 }
 
